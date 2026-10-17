@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quilt Designer</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23c4553a'/%3E%3Cpath d='M6 6h10L6 16zM26 26H16l10-10zM16 6h10v10zM6 16v10h10z' fill='%23fbf3e6'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/styles.css">
+  <style id="print-page-style"></style>
+</head>
+<body>
+  <!-- Icon sprite -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <symbol id="i-undo" viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></symbol>
+      <symbol id="i-redo" viewBox="0 0 24 24"><path d="m15 14 5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/></symbol>
+      <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+      <symbol id="i-file" viewBox="0 0 24 24"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M12 12v6M9 15h6"/></symbol>
+      <symbol id="i-open" viewBox="0 0 24 24"><path d="M4 20a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v2"/><path d="M4 20h14l4-9H8l-4 9z"/></symbol>
+      <symbol id="i-save" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></symbol>
+      <symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5M12 15V3"/></symbol>
+      <symbol id="i-upload" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5M12 3v12"/></symbol>
+      <symbol id="i-print" viewBox="0 0 24 24"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></symbol>
+      <symbol id="i-rot-ccw" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></symbol>
+      <symbol id="i-rot-cw" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></symbol>
+      <symbol id="i-flip-h" viewBox="0 0 24 24"><path d="M12 2v20" stroke-dasharray="2 3"/><path d="M9 6 3 18h6z"/><path d="m15 6 6 12h-6z"/></symbol>
+      <symbol id="i-flip-v" viewBox="0 0 24 24"><path d="M2 12h20" stroke-dasharray="2 3"/><path d="M6 9 18 3v6z"/><path d="m6 15 12 6v-6z"/></symbol>
+      <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></symbol>
+      <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></symbol>
+      <symbol id="i-front" viewBox="0 0 24 24"><path d="M4 16V5a1 1 0 0 1 1-1h11"/><rect x="8" y="8" width="13" height="13" rx="2" fill="currentColor" fill-opacity=".2"/></symbol>
+      <symbol id="i-back" viewBox="0 0 24 24"><rect x="3" y="3" width="13" height="13" rx="2" fill="currentColor" fill-opacity=".2"/><path d="M20 8v11a1 1 0 0 1-1 1H8"/></symbol>
+      <symbol id="i-zoom-in" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3M11 8v6M8 11h6"/></symbol>
+      <symbol id="i-zoom-out" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3M8 11h6"/></symbol>
+      <symbol id="i-fit" viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/></symbol>
+      <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></symbol>
+      <symbol id="i-magnet" viewBox="0 0 24 24"><path d="m6 15-4-4 6.75-6.77a7.79 7.79 0 0 1 11 11L13 22l-4-4 6.39-6.36a2.14 2.14 0 0 0-3-3z"/><path d="m5 8 4 4M12 15l4 4"/></symbol>
+      <symbol id="i-pencil" viewBox="0 0 24 24"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></symbol>
+      <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+      <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01"/></symbol>
+      <symbol id="i-shapes" viewBox="0 0 24 24"><path d="M8.3 10a.7.7 0 0 1-.6-1l3.7-6.2a.7.7 0 0 1 1.2 0L16.3 9a.7.7 0 0 1-.6 1z"/><rect x="3" y="14" width="7" height="7" rx="1"/><circle cx="17.5" cy="17.5" r="3.5"/></symbol>
+      <symbol id="i-fabric" viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M4 9.3h16M4 14.6h16M9.3 4v16M14.6 4v16" stroke-opacity=".45"/></symbol>
+      <symbol id="i-palette" viewBox="0 0 24 24"><circle cx="13.5" cy="6.5" r="1.3"/><circle cx="17.5" cy="10.5" r="1.3"/><circle cx="8.5" cy="7.5" r="1.3"/><circle cx="6.5" cy="12.5" r="1.3"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.93 0 1.65-.75 1.65-1.69 0-.44-.18-.84-.44-1.13-.29-.29-.44-.65-.44-1.13a1.64 1.64 0 0 1 1.67-1.67h2c3.05 0 5.56-2.5 5.56-5.55C21.97 6.01 17.46 2 12 2z"/></symbol>
+      <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/></symbol>
+      <symbol id="i-eraser" viewBox="0 0 24 24"><path d="m7 21-4.3-4.3a1 1 0 0 1 0-1.4l10-10a1 1 0 0 1 1.4 0l5.6 5.6a1 1 0 0 1 0 1.4L11 21z"/><path d="M22 21H7M5 11l9 9"/></symbol>
+    </defs>
+  </svg>
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo" aria-hidden="true">
+        <svg viewBox="0 0 32 32"><rect width="32" height="32" rx="8"/><path d="M7 7h9L7 16zM25 25h-9l9-9zM16 7h9v9zM7 16v9h9z"/></svg>
+      </span>
+      <input id="project-name" class="title-input" aria-label="Quilt name" spellcheck="false">
+    </div>
+
+    <div class="toolbar">
+      <button class="icon-btn" id="btn-undo" data-tip="Undo (Ctrl+Z)"><svg><use href="#i-undo"/></svg></button>
+      <button class="icon-btn" id="btn-redo" data-tip="Redo (Ctrl+Shift+Z)"><svg><use href="#i-redo"/></svg></button>
+      <span class="divider"></span>
+      <button class="icon-btn" id="btn-new" data-tip="New quilt"><svg><use href="#i-file"/></svg></button>
+      <button class="icon-btn" id="btn-open" data-tip="Open quilt file"><svg><use href="#i-open"/></svg></button>
+      <button class="icon-btn" id="btn-save" data-tip="Save quilt file"><svg><use href="#i-save"/></svg></button>
+      <span class="divider"></span>
+      <button class="icon-btn" id="btn-help" data-tip="Keyboard shortcuts"><svg><use href="#i-help"/></svg></button>
+      <button class="btn" id="btn-print"><svg><use href="#i-print"/></svg>Print</button>
+      <button class="btn primary" id="btn-export"><svg><use href="#i-download"/></svg>Export</button>
+    </div>
+    <input type="file" id="open-input" accept=".quilt,.json,application/json" hidden>
+  </header>
+
+  <main class="layout">
+    <aside class="panel left-panel">
+      <div class="segmented tabs" role="tablist">
+        <button class="active" data-side-tab="shapes"><svg><use href="#i-shapes"/></svg>Shapes</button>
+        <button data-side-tab="fabrics"><svg><use href="#i-fabric"/></svg>Fabrics</button>
+      </div>
+
+      <div class="side-pane" data-side-pane="shapes">
+        <button class="btn dashed block" id="btn-new-shape"><svg><use href="#i-plus"/></svg>New shape</button>
+        <p class="hint">Click a shape to add it next to the selected piece, or drag it onto the quilt.</p>
+        <div class="shape-library" id="shape-library"></div>
+      </div>
+
+      <div class="side-pane" data-side-pane="fabrics" hidden>
+        <div class="row gap">
+          <button class="btn block" id="btn-upload-fabric"><svg><use href="#i-upload"/></svg>Add photos</button>
+          <button class="btn block" id="btn-add-solid"><svg><use href="#i-palette"/></svg>Add solid</button>
+        </div>
+        <input type="file" id="fabric-input" accept="image/*" multiple hidden>
+        <p class="hint">Select pieces, then click a fabric. You can also drag a fabric onto a piece, or drop photos here.</p>
+        <div class="fabric-library" id="fabric-library"></div>
+      </div>
+    </aside>
+
+    <section class="stage-wrap">
+      <div class="stage" id="stage"></div>
+      <div class="empty-hint" id="empty-hint">
+        <svg><use href="#i-shapes"/></svg>
+        <strong>Start your quilt</strong>
+        <span>Pick a shape from the library on the left</span>
+      </div>
+      <div class="float-bar">
+        <button class="icon-btn" id="btn-zoom-out" data-tip="Zoom out (−)"><svg><use href="#i-zoom-out"/></svg></button>
+        <button class="zoom-readout" id="zoom-readout" data-tip="Fit quilt to screen (0)">100%</button>
+        <button class="icon-btn" id="btn-zoom-in" data-tip="Zoom in (+)"><svg><use href="#i-zoom-in"/></svg></button>
+        <button class="icon-btn" id="btn-fit" data-tip="Fit to screen"><svg><use href="#i-fit"/></svg></button>
+        <span class="divider"></span>
+        <button class="icon-btn toggle" id="btn-grid" data-tip="Show grid"><svg><use href="#i-grid"/></svg></button>
+        <button class="icon-btn toggle" id="btn-snap" data-tip="Snap to grid &amp; pieces (hold Alt to ignore)"><svg><use href="#i-magnet"/></svg></button>
+      </div>
+    </section>
+
+    <aside class="panel right-panel" id="inspector"></aside>
+  </main>
+
+  <!-- New / edit shape -->
+  <dialog id="shape-dialog" class="modal modal-lg">
+    <header class="modal-head">
+      <h2 id="shape-dialog-title">New shape</h2>
+      <div class="segmented">
+        <button data-tab="basic" class="active">Basic shape</button>
+        <button data-tab="draw">Draw point to point</button>
+      </div>
+      <button class="icon-btn" id="shape-close" aria-label="Close"><svg><use href="#i-x"/></svg></button>
+    </header>
+    <div class="modal-body">
+      <section class="pane-basic" data-pane="basic">
+        <div class="type-grid" id="type-grid"></div>
+        <div class="basic-side">
+          <div class="basic-preview" id="basic-preview"></div>
+          <div class="basic-dims" id="basic-dims"></div>
+          <div class="param-form" id="param-form"></div>
+        </div>
+      </section>
+      <section class="pane-draw" data-pane="draw" hidden>
+        <div class="draw-tools">
+          <label class="field inline"><span>Snap</span>
+            <select id="draw-snap">
+              <option value="1">1″</option>
+              <option value="0.5">½″</option>
+              <option value="0.25">¼″</option>
+              <option value="0.125">⅛″</option>
+              <option value="0">Off</option>
+            </select>
+          </label>
+          <label class="field inline"><span>Board</span>
+            <select id="draw-board">
+              <option value="6">6″</option>
+              <option value="12">12″</option>
+              <option value="24">24″</option>
+              <option value="48">48″</option>
+            </select>
+          </label>
+          <span class="spacer"></span>
+          <button class="btn sm" id="draw-undo"><svg><use href="#i-undo"/></svg>Undo point</button>
+          <button class="btn sm" id="draw-clear"><svg><use href="#i-eraser"/></svg>Clear</button>
+          <button class="btn sm" id="draw-close">Finish shape</button>
+        </div>
+        <div class="draw-board-wrap"><svg id="draw-svg" tabindex="0"></svg></div>
+        <div class="draw-status" id="draw-status"></div>
+      </section>
+    </div>
+    <footer class="modal-foot">
+      <label class="field inline grow"><span>Name</span><input id="shape-name" placeholder="Shape name"></label>
+      <button class="btn" id="shape-cancel">Cancel</button>
+      <button class="btn primary" id="shape-save">Add to library</button>
+    </footer>
+  </dialog>
+
+  <!-- Export -->
+  <dialog id="export-dialog" class="modal">
+    <header class="modal-head">
+      <h2>Export quilt</h2>
+      <button class="icon-btn" data-close aria-label="Close"><svg><use href="#i-x"/></svg></button>
+    </header>
+    <div class="modal-body stack">
+      <div class="segmented wide" id="export-format">
+        <button data-format="png" class="active">PNG</button>
+        <button data-format="jpeg">JPEG</button>
+        <button data-format="pdf">PDF</button>
+      </div>
+      <label class="field"><span>Quality</span>
+        <select id="export-dpi">
+          <option value="50">Screen (50 px per inch)</option>
+          <option value="100" selected>Standard (100 px per inch)</option>
+          <option value="200">High (200 px per inch)</option>
+          <option value="300">Print (300 px per inch)</option>
+        </select>
+      </label>
+      <label class="field" id="export-page-field" hidden><span>Page size</span>
+        <select id="export-page">
+          <option value="letter">US Letter</option>
+          <option value="legal">US Legal</option>
+          <option value="tabloid">Tabloid</option>
+          <option value="a4">A4</option>
+          <option value="a3">A3</option>
+        </select>
+      </label>
+      <label class="check"><input type="checkbox" id="export-seams" checked> Show seam lines</label>
+      <label class="check" id="export-caption-field" hidden><input type="checkbox" id="export-caption" checked> Include name and size</label>
+      <p class="hint" id="export-size"></p>
+    </div>
+    <footer class="modal-foot">
+      <button class="btn" data-close>Cancel</button>
+      <button class="btn primary" id="export-go"><svg><use href="#i-download"/></svg>Download</button>
+    </footer>
+  </dialog>
+
+  <!-- Fabric edit -->
+  <dialog id="fabric-dialog" class="modal modal-sm">
+    <header class="modal-head">
+      <h2 id="fabric-dialog-title">Fabric</h2>
+      <button class="icon-btn" data-close aria-label="Close"><svg><use href="#i-x"/></svg></button>
+    </header>
+    <div class="modal-body stack">
+      <div class="fabric-preview" id="fabric-preview"></div>
+      <label class="field"><span>Name</span><input id="fabric-name"></label>
+      <label class="field" id="fabric-color-field"><span>Colour</span><input type="color" id="fabric-color"></label>
+      <label class="field" id="fabric-width-field"><span>Photo shows this much fabric (width)</span>
+        <div class="input-unit"><input type="number" id="fabric-width" min="0.25" step="0.25"><em>in</em></div>
+      </label>
+      <p class="hint" id="fabric-width-hint">Sets the real-world scale of the print. A photo of a 10″ wide piece of fabric → 10.</p>
+    </div>
+    <footer class="modal-foot">
+      <button class="btn danger-ghost" id="fabric-delete"><svg><use href="#i-trash"/></svg>Delete</button>
+      <span class="spacer"></span>
+      <button class="btn" data-close>Cancel</button>
+      <button class="btn primary" id="fabric-save">Save</button>
+    </footer>
+  </dialog>
+
+  <!-- Shortcuts -->
+  <dialog id="help-dialog" class="modal">
+    <header class="modal-head">
+      <h2>Tips &amp; shortcuts</h2>
+      <button class="icon-btn" data-close aria-label="Close"><svg><use href="#i-x"/></svg></button>
+    </header>
+    <div class="modal-body">
+      <dl class="shortcuts">
+        <dt>Click a shape in the library</dt><dd>Add it next to the selected piece</dd>
+        <dt><kbd>Shift</kbd> + click</dt><dd>Select several pieces</dd>
+        <dt>Drag on empty space</dt><dd>Box-select pieces</dd>
+        <dt><kbd>R</kbd> / <kbd>Shift</kbd>+<kbd>R</kbd></dt><dd>Rotate 90° clockwise / anticlockwise</dd>
+        <dt><kbd>H</kbd> / <kbd>V</kbd></dt><dd>Mirror horizontally / vertically</dd>
+        <dt><kbd>Ctrl</kbd>+<kbd>D</kbd></dt><dd>Duplicate selection alongside</dd>
+        <dt><kbd>Ctrl</kbd>+<kbd>C</kbd> / <kbd>V</kbd></dt><dd>Copy / paste</dd>
+        <dt><kbd>Delete</kbd></dt><dd>Remove selected pieces</dd>
+        <dt>Arrow keys</dt><dd>Nudge (hold <kbd>Shift</kbd> for 1″)</dd>
+        <dt><kbd>Ctrl</kbd>+<kbd>A</kbd></dt><dd>Select all</dd>
+        <dt><kbd>Ctrl</kbd>+<kbd>Z</kbd> / <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Z</kbd></dt><dd>Undo / redo</dd>
+        <dt>Mouse wheel · <kbd>+</kbd> <kbd>−</kbd> <kbd>0</kbd></dt><dd>Zoom · fit</dd>
+        <dt>Hold <kbd>Space</kbd> and drag, or right-drag</dt><dd>Pan around</dd>
+        <dt>Hold <kbd>Alt</kbd> while dragging</dt><dd>Move without snapping</dd>
+      </dl>
+      <p class="hint">Your quilt is saved automatically in this browser. Use <strong>Save</strong> to keep a file you can open on another computer.</p>
+    </div>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div id="print-area"></div>
+
+  <script src="js/geometry.js"></script>
+  <script src="js/samples.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/editor.js"></script>
+  <script src="js/builder.js"></script>
+  <script src="js/export.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
