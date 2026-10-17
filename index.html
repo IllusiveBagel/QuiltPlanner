@@ -332,7 +332,7 @@
     <div class="modal-body stack">
       <div class="fabric-preview" id="fabric-preview"></div>
       <label class="field"><span>Name</span><input id="fabric-name"></label>
-      <label class="field" id="fabric-color-field"><span>Colour</span><input type="color" id="fabric-color"></label>
+      <div class="field" id="fabric-color-field"><span>Colour</span><div id="fabric-colour-picker"></div></div>
       <label class="field" id="fabric-width-field"><span>Photo shows this much fabric (width)</span>
         <div class="input-unit"><input type="number" id="fabric-width" min="0.25" step="0.25"><em>in</em></div>
       </label>
@@ -385,6 +385,7 @@
   <script src="js/builder.js?v=dev"></script>
   <script src="js/export.js?v=dev"></script>
   <script src="js/pattern-import.js?v=dev"></script>
+  <script src="js/colour-picker.js?v=dev"></script>
   <script src="js/app.js?v=dev"></script>
   <script>
     // Offline support once hosted (service workers don't run from file://).

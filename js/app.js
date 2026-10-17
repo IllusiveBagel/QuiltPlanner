@@ -208,13 +208,14 @@
 
   // ---------------------------------------------------------------- fabric dialog
   let fabricEditing = null;
+  let fabricPicker = null;
   function openFabricDialog(f) {
     fabricEditing = f || null;
     const d = $('#fabric-dialog');
     const isColor = !f || f.kind === 'color';
     $('#fabric-dialog-title').textContent = f ? 'Edit fabric' : 'New solid fabric';
     $('#fabric-name').value = f ? f.name : 'Solid';
-    $('#fabric-color').value = f && f.color ? f.color : '#7a9e9f';
+    fabricPicker.set(f && f.color ? f.color : '#7a9e9f');
     $('#fabric-width').value = f && f.widthIn ? f.widthIn : 8;
     $('#fabric-color-field').hidden = !isColor;
     $('#fabric-width-field').hidden = isColor;
@@ -228,7 +229,7 @@
     const f = fabricEditing;
     const box = $('#fabric-preview');
     if (!f || f.kind === 'color') {
-      box.style.cssText = `background:${$('#fabric-color').value}`;
+      box.style.cssText = `background:${fabricPicker.get()}`;
     } else {
       const a = store.fabricAsset(f);
       const w = Math.max(0.25, +$('#fabric-width').value || 8);
@@ -239,17 +240,17 @@
 
   function initFabricDialog() {
     const d = $('#fabric-dialog');
-    $('#fabric-color').addEventListener('input', updateFabricPreview);
+    fabricPicker = Q.colourPicker.mount($('#fabric-colour-picker'), '#7a9e9f', updateFabricPreview);
     $('#fabric-width').addEventListener('input', updateFabricPreview);
     $('#fabric-save').addEventListener('click', () => {
       const name = $('#fabric-name').value.trim() || 'Fabric';
       if (fabricEditing) {
         const changes = { name };
-        if (fabricEditing.kind === 'color') changes.color = $('#fabric-color').value;
+        if (fabricEditing.kind === 'color') changes.color = fabricPicker.get();
         else changes.widthIn = Math.max(0.25, +$('#fabric-width').value || 8);
         store.updateFabric(fabricEditing.id, changes);
       } else {
-        const f = store.addFabric({ name, kind: 'color', color: $('#fabric-color').value });
+        const f = store.addFabric({ name, kind: 'color', color: fabricPicker.get() });
         if (editor.selection.size) editor.applyFabric(f.id);
       }
       d.close();
@@ -320,8 +321,8 @@
       <section class="insp-section">
         <h4>Appearance</h4>
         <div class="row gap">
-          ${field('Background', `<input type="color" id="q-bg" value="${q.background}">`)}
-          ${field('Seam colour', `<input type="color" id="q-seam-color" value="${q.seamColor}">`)}
+          ${field('Background', colourButton('q-bg', q.background))}
+          ${field('Seam colour', colourButton('q-seam-color', q.seamColor))}
         </div>
         <label class="check"><input type="checkbox" id="q-seams" ${q.seams ? 'checked' : ''}> Show seam lines</label>
       </section>
@@ -341,6 +342,9 @@
       }`;
   }
 
+  const colourButton = (id, c) =>
+    `<button type="button" class="colour-btn" id="${id}"><i style="background:${c}"></i><span>${c}</span></button>`;
+
   function bindQuilt() {
     const q = () => S().quilt;
     const set = (changes) => {
@@ -357,8 +361,13 @@
     onNum('q-h', 'height', 1);
     onNum('q-grid', 'gridSize', 0.25);
     $('#q-snap').addEventListener('change', (e) => set({ snapStep: +e.target.value }));
-    $('#q-bg').addEventListener('change', (e) => set({ background: e.target.value }));
-    $('#q-seam-color').addEventListener('change', (e) => set({ seamColor: e.target.value }));
+    const pickInto = (id, key, title) =>
+      $('#' + id).addEventListener('click', async () => {
+        const c = await Q.colourPicker.pick(q()[key], title);
+        if (c) set({ [key]: c });
+      });
+    pickInto('q-bg', 'background', 'Background colour');
+    pickInto('q-seam-color', 'seamColor', 'Seam colour');
     $('#q-seams').addEventListener('change', (e) => set({ seams: e.target.checked }));
     $('#q-snap-grid').addEventListener('change', (e) => set({ snapGrid: e.target.checked }));
     $('#q-snap-pieces').addEventListener('change', (e) => set({ snapPieces: e.target.checked }));

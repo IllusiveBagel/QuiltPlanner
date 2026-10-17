@@ -13,6 +13,7 @@ const CORE = [
   'js/builder.js',
   'js/export.js',
   'js/pattern-import.js',
+  'js/colour-picker.js',
   'js/app.js',
   'icons/icon.svg',
   'icons/icon-192.png',
