@@ -16,6 +16,9 @@ No build step, no server, no dependencies — just open `index.html` in a modern
 - **Arrange** – drag to move (snaps to the grid and to corners of other pieces), box-select,
   rotate (handle, buttons or `R`), mirror horizontally / vertically (`H` / `V`), duplicate,
   copy/paste, resize, undo/redo.
+- **Lock layout** – the 🔒 button (or `L`) locks the arrangement once you are happy with it. Pieces
+  can still be selected and given fabrics, but nothing can be moved, rotated, added or deleted until
+  you unlock it. The lock is saved with the quilt.
 - **Fabrics** – upload photos of your fabric (or add solid colours). Set how many inches of
   fabric the photo shows so prints appear at true scale, then fine-tune scale, angle and
   position per piece for fussy cutting.

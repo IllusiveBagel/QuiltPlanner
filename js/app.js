@@ -95,6 +95,7 @@
 
       item.addEventListener('click', (e) => {
         const act = e.target.closest('[data-act]');
+        if (act && editor.layoutLocked()) return;
         if (act && act.dataset.act === 'edit') return Q.builder.open(shape);
         if (act && act.dataset.act === 'delete') return deleteShape(shape);
         editor.addPiece(shape.id);
@@ -285,6 +286,7 @@
     inspectorStale = false;
     const sel = editor.selectedPieces();
     box.innerHTML = sel.length ? selectionHtml(sel) : quiltHtml();
+    for (const b of $$('[data-unlock]', box)) b.addEventListener('click', toggleLock);
     (sel.length ? bindSelection : bindQuilt)(sel);
   }
 
@@ -305,6 +307,7 @@
       .join('');
     return `
       <div class="insp-head"><h3>Quilt</h3><p>${S().pieces.length} piece${S().pieces.length === 1 ? '' : 's'}</p></div>
+      ${S().locked ? lockedNote() : ''}
       <section class="insp-section">
         <h4>Finished size</h4>
         <div class="row gap">${field('Width', num('q-w', fmt(q.width), 'min="1" step="0.5"'))}${field('Height', num('q-h', fmt(q.height), 'min="1" step="0.5"'))}</div>
@@ -404,7 +407,7 @@
         <p>${fmt(b.w)}″ × ${fmt(b.h)}″</p>
       </div>
       <section class="insp-section"><h4>Fabric</h4>${fabricBlock}</section>
-      <section class="insp-section">
+      ${S().locked ? lockedNote() : `<section class="insp-section">
         <h4>Rotate</h4>
         <div class="btn-row">
           <button class="btn sm" data-rot="-90" data-tip="Rotate 90° anticlockwise (Shift+R)">${icon('rot-ccw')}90°</button>
@@ -436,6 +439,13 @@
           <button class="btn sm" id="s-front">${icon('front')}To front</button>
           <button class="btn sm" id="s-back">${icon('back')}To back</button>
         </div>
+      </section>`}`;
+  }
+
+  function lockedNote() {
+    return `<section class="insp-section locked-note">
+        <p>${icon('lock')}<span>The layout is locked, so pieces can't be moved by accident. You can still choose fabrics.</span></p>
+        <button class="btn sm block" data-unlock>${icon('unlock')}Unlock layout</button>
       </section>`;
   }
 
@@ -638,6 +648,8 @@
       await Q.exporter.print({ dpi: 150, seams: S().quilt.seams });
     });
     $('#btn-help').addEventListener('click', () => $('#help-dialog').showModal());
+    $('#btn-lock').addEventListener('click', toggleLock);
+    $('#locked-pill').addEventListener('click', toggleLock);
 
     const name = $('#project-name');
     name.addEventListener('change', () => {
@@ -697,6 +709,23 @@
     }
   }
 
+  function toggleLock() {
+    const locked = !S().locked;
+    store.setLocked(locked);
+    toast(locked ? 'Layout locked — pieces stay put, but you can still choose fabrics' : 'Layout unlocked');
+  }
+
+  function renderLock() {
+    const locked = !!S().locked;
+    const btn = $('#btn-lock');
+    btn.classList.toggle('on', locked);
+    btn.setAttribute('aria-pressed', locked);
+    btn.dataset.tip = locked ? 'Unlock the layout (L)' : "Lock the layout so pieces can't be moved (L)";
+    $('use', btn).setAttribute('href', locked ? '#i-lock' : '#i-unlock');
+    $('#locked-pill').hidden = !locked;
+    document.body.classList.toggle('locked', locked);
+  }
+
   // ---------------------------------------------------------------- keyboard
   function initKeyboard() {
     window.addEventListener('keydown', (e) => {
@@ -717,6 +746,7 @@
       else if (mod) handled = false;
       else if (k === 'delete' || k === 'backspace') editor.deleteSelected();
       else if (k === 'escape') editor.clearSelection();
+      else if (k === 'l') toggleLock();
       else if (k === 'r') editor.rotateSelected(e.shiftKey ? -90 : 90);
       else if (k === 'h') editor.flipSelected('h');
       else if (k === 'v') editor.flipSelected('v');
@@ -741,6 +771,7 @@
       $('#btn-grid').classList.toggle('on', q.showGrid);
       $('#btn-snap').classList.toggle('on', q.snapGrid || q.snapPieces);
     }
+    renderLock();
     renderFabricLibrary();
     renderInspector();
     $('#btn-undo').disabled = !store.canUndo();

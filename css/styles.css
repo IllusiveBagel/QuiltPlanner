@@ -540,3 +540,19 @@ button, .shape-item, .fabric-item { -webkit-tap-highlight-color: transparent; to
 }
 
 @media (pointer: coarse) { .touch-tips { display: block; margin-bottom: 16px; font-size: 14px; } }
+
+/* ---------------------------------------------------------------- layout lock */
+.icon-btn.toggle#btn-lock.on { background: var(--accent); color: #fff; }
+.locked-pill {
+  position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+  display: inline-flex; align-items: center; gap: 7px; padding: 7px 14px;
+  border: 0; border-radius: 999px; background: #26221e; color: #fff;
+  font-size: 13px; font-weight: 500; box-shadow: var(--shadow); cursor: pointer; white-space: nowrap;
+}
+.locked-pill svg { width: 14px; height: 14px; }
+.locked-pill:hover { background: #3a342e; }
+body.locked .sel-bar .layout-action { display: none; }
+body.locked .shape-library { opacity: .5; }
+body.locked .piece { cursor: pointer; }
+.locked-note p { display: flex; gap: 8px; margin: 0; font-size: 13px; color: var(--muted); line-height: 1.45; }
+.locked-note p svg { width: 16px; height: 16px; flex: none; margin-top: 1px; color: var(--accent); fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }

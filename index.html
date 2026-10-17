@@ -49,6 +49,8 @@
       <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/></symbol>
       <symbol id="i-more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/></symbol>
       <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/></symbol>
+      <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
+      <symbol id="i-unlock" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 7.9-.9"/></symbol>
       <symbol id="i-select" viewBox="0 0 24 24"><path d="M5 3a2 2 0 0 0-2 2M19 3a2 2 0 0 1 2 2M21 19a2 2 0 0 1-2 2M5 21a2 2 0 0 1-2-2M9 3h1M9 21h1M14 3h1M14 21h1M3 9v1M21 9v1M3 14v1M21 14v1"/><path d="m9 12 2 2 4-4"/></symbol>
       <symbol id="i-eraser" viewBox="0 0 24 24"><path d="m7 21-4.3-4.3a1 1 0 0 1 0-1.4l10-10a1 1 0 0 1 1.4 0l5.6 5.6a1 1 0 0 1 0 1.4L11 21z"/><path d="M22 21H7M5 11l9 9"/></symbol>
     </defs>
@@ -127,15 +129,17 @@
         <span class="divider"></span>
         <button class="icon-btn toggle" id="btn-grid" data-tip="Show grid"><svg><use href="#i-grid"/></svg></button>
         <button class="icon-btn toggle" id="btn-snap" data-tip="Snap to grid &amp; pieces (hold Alt to ignore)"><svg><use href="#i-magnet"/></svg></button>
+        <button class="icon-btn toggle" id="btn-lock" data-tip="Lock the layout so pieces can't be moved (L)" aria-pressed="false"><svg><use href="#i-unlock"/></svg></button>
       </div>
+      <button class="locked-pill" id="locked-pill" hidden><svg><use href="#i-lock"/></svg>Layout locked · choosing fabrics</button>
       <div class="sel-bar" id="sel-bar" hidden>
-        <button class="icon-btn" data-sel="rot-ccw" aria-label="Rotate anticlockwise"><svg><use href="#i-rot-ccw"/></svg></button>
-        <button class="icon-btn" data-sel="rot-cw" aria-label="Rotate clockwise"><svg><use href="#i-rot-cw"/></svg></button>
-        <button class="icon-btn" data-sel="flip-h" aria-label="Mirror horizontally"><svg><use href="#i-flip-h"/></svg></button>
-        <button class="icon-btn" data-sel="flip-v" aria-label="Mirror vertically"><svg><use href="#i-flip-v"/></svg></button>
-        <button class="icon-btn" data-sel="dup" aria-label="Duplicate"><svg><use href="#i-copy"/></svg></button>
-        <button class="icon-btn" data-sel="del" aria-label="Delete"><svg><use href="#i-trash"/></svg></button>
-        <span class="divider"></span>
+        <button class="icon-btn layout-action" data-sel="rot-ccw" aria-label="Rotate anticlockwise"><svg><use href="#i-rot-ccw"/></svg></button>
+        <button class="icon-btn layout-action" data-sel="rot-cw" aria-label="Rotate clockwise"><svg><use href="#i-rot-cw"/></svg></button>
+        <button class="icon-btn layout-action" data-sel="flip-h" aria-label="Mirror horizontally"><svg><use href="#i-flip-h"/></svg></button>
+        <button class="icon-btn layout-action" data-sel="flip-v" aria-label="Mirror vertically"><svg><use href="#i-flip-v"/></svg></button>
+        <button class="icon-btn layout-action" data-sel="dup" aria-label="Duplicate"><svg><use href="#i-copy"/></svg></button>
+        <button class="icon-btn layout-action" data-sel="del" aria-label="Delete"><svg><use href="#i-trash"/></svg></button>
+        <span class="divider layout-action"></span>
         <button class="icon-btn toggle" data-sel="multi" aria-label="Select several"><svg><use href="#i-select"/></svg></button>
         <button class="icon-btn" data-sel="more" aria-label="More options"><svg><use href="#i-sliders"/></svg></button>
       </div>
@@ -359,6 +363,7 @@
         <dt><kbd>Ctrl</kbd>+<kbd>D</kbd></dt><dd>Duplicate selection alongside</dd>
         <dt><kbd>Ctrl</kbd>+<kbd>C</kbd> / <kbd>V</kbd></dt><dd>Copy / paste</dd>
         <dt><kbd>Delete</kbd></dt><dd>Remove selected pieces</dd>
+        <dt><kbd>L</kbd></dt><dd>Lock / unlock the layout (fabrics can still be changed)</dd>
         <dt>Arrow keys</dt><dd>Nudge (hold <kbd>Shift</kbd> for 1″)</dd>
         <dt><kbd>Ctrl</kbd>+<kbd>A</kbd></dt><dd>Select all</dd>
         <dt><kbd>Ctrl</kbd>+<kbd>Z</kbd> / <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Z</kbd></dt><dd>Undo / redo</dd>

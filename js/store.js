@@ -61,6 +61,7 @@
     shapes: [],
     fabrics: [],
     pieces: [],
+    locked: false, // layout lock: saved with the project but kept out of undo history
   };
 
   const listeners = new Set();
@@ -213,6 +214,7 @@
       quilt: state.quilt,
       shapes: state.shapes,
       pieces: state.pieces,
+      locked: state.locked,
       fabricOrder: state.fabrics.map((f) => f.id),
     };
     return tx('kv', 'readwrite', (s) => s.put(project, 'project'));
@@ -245,6 +247,7 @@
       state.shapes = project.shapes || [];
       state.fabrics = ordered;
       state.pieces = project.pieces || [];
+      state.locked = !!project.locked;
     } else {
       newProject(true);
     }
@@ -260,6 +263,7 @@
     state.shapes = shapes;
     state.fabrics = fabrics;
     state.pieces = [];
+    state.locked = false;
     replaceAllFabrics(fabrics);
     saveProject();
     resetHistory();
@@ -277,6 +281,7 @@
         shapes: state.shapes,
         fabrics: state.fabrics,
         pieces: state.pieces,
+        locked: state.locked,
       },
       null,
       1
@@ -294,6 +299,7 @@
     state.shapes = data.shapes || [];
     state.fabrics = data.fabrics || [];
     state.pieces = data.pieces;
+    state.locked = !!data.locked;
     replaceAllFabrics(state.fabrics);
     saveProject();
     resetHistory();
@@ -301,6 +307,12 @@
   }
 
   // ---------------- mutations used by the UI ----------------
+  function setLocked(locked) {
+    state.locked = !!locked;
+    saveProject();
+    emit('lock');
+  }
+
   function addFabric(fabric) {
     const f = { id: uid('fab'), ...fabric };
     state.fabrics.push(f);
@@ -347,6 +359,7 @@
     redo,
     canUndo: () => history.past.length > 0,
     canRedo: () => history.future.length > 0,
+    setLocked,
     load,
     newProject,
     exportProjectFile,

@@ -593,6 +593,7 @@
   }
 
   function open() {
+    if (Q.editor.layoutLocked()) return;
     $('#import-dialog').showModal();
     setHasImage(!!ui.img);
     if (ui.img) {

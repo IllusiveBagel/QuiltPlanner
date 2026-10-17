@@ -286,7 +286,7 @@
         },
         overlayG
       );
-      if (!drag || drag.mode !== 'move') {
+      if (!S().locked && (!drag || drag.mode !== 'move')) {
         const cx = b.minX + b.w / 2;
         const top = b.minY - pad;
         const hy = top - ROTATE_HANDLE_PX / scale;
@@ -379,7 +379,9 @@
         setSelection([id]);
       }
       const sel = selectedPieces();
-      if (sel.length) {
+      if (S().locked) {
+        drag = { mode: 'pan', sx: e.clientX, sy: e.clientY, vx: editor.view.x, vy: editor.view.y };
+      } else if (sel.length) {
         const selIds = editor.selection;
         const movingPts = [];
         for (const p of sel) movingPts.push(...worldPoints(p));
@@ -616,7 +618,15 @@
     }
   }
 
+  // While the layout is locked nothing may move, appear or disappear; fabrics can still change.
+  function layoutLocked() {
+    if (!S().locked) return false;
+    if (Q.ui) Q.ui.toast('The layout is locked — use the lock button to unlock it');
+    return true;
+  }
+
   function addPiece(shapeId, at) {
+    if (layoutLocked()) return;
     const shape = Q.store.shapeById(shapeId);
     if (!shape) return;
     const piece = { id: Q.store.uid('pc'), shapeId, x: 0, y: 0, rotation: 0, flipX: 1, flipY: 1, scale: 1, fabricId: null, fill: {} };
@@ -639,6 +649,7 @@
   }
 
   function duplicateSelected() {
+    if (layoutLocked()) return;
     const sel = selectedPieces();
     if (!sel.length) return;
     const copies = cloneGroup(sel);
@@ -657,10 +668,12 @@
   }
 
   function cutSelected() {
+    if (layoutLocked()) return;
     if (copySelected()) deleteSelected();
   }
 
   function paste() {
+    if (layoutLocked()) return;
     if (!clipboard) return;
     const valid = clipboard.filter((p) => Q.store.shapeById(p.shapeId));
     if (!valid.length) return;
@@ -674,6 +687,7 @@
   }
 
   function deleteSelected() {
+    if (layoutLocked()) return;
     if (!editor.selection.size) return;
     S().pieces = S().pieces.filter((p) => !editor.selection.has(p.id));
     editor.selection.clear();
@@ -683,6 +697,7 @@
 
   // ---------------------------------------------------------------- transforms
   function rotateSelected(deg) {
+    if (layoutLocked()) return;
     const sel = selectedPieces();
     if (!sel.length) return;
     const b = selectionBounds(sel);
@@ -695,6 +710,7 @@
   }
 
   function setRotation(deg) {
+    if (layoutLocked()) return;
     const sel = selectedPieces();
     for (const p of sel) p.rotation = normAngle(deg);
     Q.store.commit('rotate');
@@ -702,6 +718,7 @@
 
   // Mirror across the selection's vertical axis ('h') or horizontal axis ('v').
   function flipSelected(axis) {
+    if (layoutLocked()) return;
     const sel = selectedPieces();
     if (!sel.length) return;
     const b = selectionBounds(sel);
@@ -721,12 +738,14 @@
   }
 
   function setScale(scale) {
+    if (layoutLocked()) return;
     if (!(scale > 0)) return;
     for (const p of selectedPieces()) p.scale = scale;
     Q.store.commit('scale');
   }
 
   function setPosition(left, top) {
+    if (layoutLocked()) return;
     const sel = selectedPieces();
     if (!sel.length) return;
     const b = selectionBounds(sel);
@@ -735,6 +754,7 @@
   }
 
   function nudge(dx, dy) {
+    if (layoutLocked()) return;
     const sel = selectedPieces();
     if (!sel.length) return;
     for (const p of sel) {
@@ -745,6 +765,7 @@
   }
 
   function reorder(where) {
+    if (layoutLocked()) return;
     const st = S();
     const sel = st.pieces.filter((p) => editor.selection.has(p.id));
     const rest = st.pieces.filter((p) => !editor.selection.has(p.id));
@@ -792,6 +813,7 @@
     reorder,
     applyFabric,
     setFill,
+    layoutLocked,
     isTyping,
   });
   Q.editor = editor;
