@@ -44,3 +44,10 @@ js/app.js         UI wiring: libraries, inspector, toolbar, keyboard shortcuts
 ```
 
 All measurements are in inches and are *finished* sizes (no seam allowance).
+
+## Hosting on GitHub Pages
+
+`.github/workflows/pages.yml` publishes the app (just `index.html`, `css/` and `js/`) whenever
+`main` is pushed. One-time setup on GitHub: **Settings → Pages → Build and deployment → Source:
+GitHub Actions**. The site is then served at `https://illusivebagel.github.io/QuiltPlanner/`.
+You can also re-run the deploy by hand from the **Actions** tab ("Deploy to GitHub Pages" → *Run workflow*).
