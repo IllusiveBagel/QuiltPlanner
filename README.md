@@ -25,6 +25,11 @@ No build step, no server, no dependencies — just open `index.html` in a modern
   become solid fabrics. To swap one for your own fabric, use *Select every piece in this fabric*
   in the inspector, then click your fabric.
 - **Export** – PNG, JPEG or a one-page PDF (Letter, Legal, Tabloid, A4, A3), plus direct printing.
+- **Phones & tablets** – on small screens the panels become slide-up sheets opened from a bottom
+  tab bar. Drag pieces with a finger, drag empty space to pan, pinch to zoom, and use the toolbar
+  under a selected piece to rotate, mirror, duplicate or delete it (☑ selects several). Drawing a
+  shape: touch, slide to aim and lift to place each corner. It can be added to your home screen and
+  works offline once it has been opened from the hosted site.
 - **Saving** – work is autosaved in the browser (IndexedDB). Use *Save* to download a
   `.quilt` file you can open again later or on another computer.
 
@@ -47,7 +52,7 @@ All measurements are in inches and are *finished* sizes (no seam allowance).
 
 ## Hosting on GitHub Pages
 
-`.github/workflows/pages.yml` publishes the app (just `index.html`, `css/` and `js/`) whenever
+`.github/workflows/pages.yml` publishes the app (`index.html`, `css/`, `js/`, `icons/`, the web-app manifest and the offline service worker `sw.js`) whenever
 `main` is pushed. One-time setup on GitHub: **Settings → Pages → Build and deployment → Source:
 GitHub Actions**. The site is then served at `https://illusivebagel.github.io/QuiltPlanner/`.
 You can also re-run the deploy by hand from the **Actions** tab ("Deploy to GitHub Pages" → *Run workflow*).

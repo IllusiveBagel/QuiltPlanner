@@ -20,6 +20,7 @@
   }
 
   const fmtIn = (v) => `${+v.toFixed(2)}″`;
+  const coarse = () => matchMedia('(pointer: coarse)').matches;
 
   // Small SVG preview of a polygon, fitted into a box.
   function thumb(points, size = 44, cls = 'thumb') {
@@ -63,7 +64,8 @@
     const svg = $('#draw-svg');
     svg.addEventListener('pointermove', onDrawMove);
     svg.addEventListener('pointerdown', onDrawDown);
-    svg.addEventListener('pointerup', () => (draw.dragIdx = -1));
+    svg.addEventListener('pointerup', onDrawUp);
+    svg.addEventListener('pointercancel', onDrawUp);
     svg.addEventListener('pointerleave', () => {
       draw.cursor = null;
       renderDraw();
@@ -202,8 +204,37 @@
   const near = (a, b, tol) => Math.hypot(a[0] - b[0], a[1] - b[1]) <= tol;
   const tolerance = () => draw.board / 60;
 
+  // Touch: points are placed when the finger lifts (slide to aim first), and a long press on a
+  // corner removes it.
+  let pendingTouch = false;
+  let pressTimer = null;
+  const cancelPress = () => {
+    clearTimeout(pressTimer);
+    pressTimer = null;
+  };
+
+  function onDrawUp(e) {
+    cancelPress();
+    draw.dragIdx = -1;
+    if (pendingTouch) {
+      pendingTouch = false;
+      const p = draw.cursor || boardPoint(e); // where the finger was aimed, not where it lifted
+      const first = draw.pts[0];
+      if (draw.pts.length >= 3 && near(first, p, tolerance() * 1.5)) {
+        closeShape();
+      } else {
+        const last = draw.pts[draw.pts.length - 1];
+        if (!last || !near(last, p, 1e-6)) draw.pts.push(p);
+      }
+      draw.cursor = null;
+      renderDraw();
+      validate();
+    }
+  }
+
   function onDrawMove(e) {
     const p = boardPoint(e);
+    if (pressTimer && draw.dragIdx >= 0 && !near(p, draw.pts[draw.dragIdx], tolerance() * 0.5)) cancelPress();
     if (draw.dragIdx >= 0) {
       draw.pts[draw.dragIdx] = p;
       validate();
@@ -225,11 +256,24 @@
         closeShape();
       } else {
         draw.dragIdx = i;
+        if (e.pointerType === 'touch' && (draw.pts.length > 3 || !draw.closed)) {
+          pressTimer = setTimeout(() => {
+            pressTimer = null;
+            draw.dragIdx = -1;
+            draw.pts.splice(i, 1);
+            if (!draw.pts.length) draw.closed = false;
+            renderDraw();
+            validate();
+          }, 550);
+        }
       }
     } else if (t.classList.contains('midpoint')) {
       const i = +t.dataset.i;
       draw.pts.splice(i + 1, 0, p);
       draw.dragIdx = i + 1;
+    } else if (e.pointerType === 'touch' && !draw.closed) {
+      pendingTouch = true;
+      draw.cursor = p;
     } else if (e.button === 0 && !draw.closed) {
       const last = draw.pts[draw.pts.length - 1];
       if (!last || !near(last, p, 1e-6)) draw.pts.push(p);
@@ -289,12 +333,14 @@
           el('line', { x1: last[0], y1: last[1], x2: draw.cursor[0], y2: draw.cursor[1], class: 'draw-preview', 'vector-effect': 'non-scaling-stroke' }, svg);
           const len = Math.hypot(draw.cursor[0] - last[0], draw.cursor[1] - last[1]);
           if (len > 0) {
-            const t = el('text', { x: draw.cursor[0] + fs * 0.8, y: draw.cursor[1] - fs * 0.8, 'font-size': fs * 1.1, class: 'draw-len' }, svg);
+            // Keep the length readout clear of a finger on touch screens.
+            const lift = coarse() ? 3.2 : 0.8;
+            const t = el('text', { x: draw.cursor[0] + fs * 0.8, y: draw.cursor[1] - fs * lift, 'font-size': fs * (coarse() ? 1.6 : 1.1), class: 'draw-len' }, svg);
             t.textContent = fmtIn(len);
           }
         }
       }
-      const r = n / 110;
+      const r = n / (coarse() ? 55 : 110);
       if (draw.closed) {
         pts.forEach((p, i) => {
           const q = pts[(i + 1) % pts.length];
@@ -311,13 +357,14 @@
     }
 
     const status = $('#draw-status');
-    const c = draw.cursor ? `Cursor ${fmtIn(draw.cursor[0])}, ${fmtIn(draw.cursor[1])}` : '';
+    const c = draw.cursor && !coarse() ? `Cursor ${fmtIn(draw.cursor[0])}, ${fmtIn(draw.cursor[1])}` : '';
     let info;
-    if (!pts.length) info = 'Click on the grid to place the first corner.';
-    else if (!draw.closed) info = pts.length < 3 ? 'Keep clicking to add corners.' : 'Click the first point (or press Enter) to finish.';
+    const tap = coarse() ? 'Tap' : 'Click';
+    if (!pts.length) info = coarse() ? 'Touch the grid, slide to aim, and lift to place the first corner.' : 'Click on the grid to place the first corner.';
+    else if (!draw.closed) info = pts.length < 3 ? `Keep ${coarse() ? 'tapping' : 'clicking'} to add corners.` : `${tap} the first point${coarse() ? '' : ' (or press Enter)'} to finish.`;
     else {
       const b = Q.geo.bounds(pts);
-      info = `${pts.length} corners · ${fmtIn(b.w)} × ${fmtIn(b.h)} · drag points to adjust, click a midpoint to add one, right-click a point to remove it`;
+      info = `${pts.length} corners · ${fmtIn(b.w)} × ${fmtIn(b.h)} · drag points to adjust, ${tap.toLowerCase()} a midpoint to add one, ${coarse() ? 'long-press' : 'right-click'} a point to remove it`;
     }
     status.textContent = [info, c].filter(Boolean).join('   ·   ');
     $('#draw-close').disabled = draw.closed || pts.length < 3;

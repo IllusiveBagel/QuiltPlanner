@@ -8,6 +8,7 @@
 
   const editor = {
     selection: new Set(),
+    multiSelect: false, // touch: taps add to / remove from the selection
     view: { x: 0, y: 0, scale: 12 }, // scale = screen pixels per inch
   };
 
@@ -15,6 +16,7 @@
   let pieceEls = new Map();
   let drag = null;
   let spaceDown = false;
+  const touches = new Map(); // active touch pointers: id -> [clientX, clientY]
   let clipboard = null;
 
   const S = () => Q.store.state;
@@ -124,7 +126,7 @@
     const q = S().quilt;
     const w = stage.clientWidth, h = stage.clientHeight;
     if (!w || !h) return;
-    const pad = 64;
+    const pad = Math.min(64, Math.min(w, h) * 0.06);
     const scale = Math.max(1, Math.min((w - pad * 2) / q.width, (h - pad * 2) / q.height));
     editor.view = { scale, x: q.width / 2 - w / 2 / scale, y: q.height / 2 - h / 2 / scale };
     updateViewBox();
@@ -290,6 +292,7 @@
         const hy = top - ROTATE_HANDLE_PX / scale;
         el('line', { x1: cx, y1: top, x2: cx, y2: hy, class: 'rot-stem', 'vector-effect': 'non-scaling-stroke' }, overlayG);
         const h = el('g', { class: 'rot-handle', transform: `translate(${cx} ${hy}) scale(${1 / scale})` }, overlayG);
+        el('circle', { r: 22, class: 'rot-hit' }, h); // generous target for fingers
         el('circle', { r: 9 }, h);
         el('path', { d: 'M-3.5 -1.5a4 4 0 1 0 4 -2.2M0.5 -6.2l0 2.6l-2.6 0', class: 'rot-icon' }, h);
       }
@@ -334,6 +337,18 @@
   // ---------------------------------------------------------------- pointer interaction
   function onPointerDown(e) {
     svg.focus({ preventScroll: true });
+    const isTouch = e.pointerType === 'touch';
+    if (isTouch) {
+      touches.set(e.pointerId, [e.clientX, e.clientY]);
+      if (touches.size === 2) {
+        // Second finger: abandon whatever the first finger started and pinch instead.
+        cancelDrag();
+        startPinch();
+        svg.setPointerCapture(e.pointerId);
+        return;
+      }
+      if (touches.size > 2) return;
+    }
     const world = clientToWorld(e);
     const target = e.target;
 
@@ -355,7 +370,7 @@
       };
     } else if (target.closest('.piece')) {
       const id = target.closest('.piece').dataset.id;
-      const additive = e.shiftKey || e.ctrlKey || e.metaKey;
+      const additive = e.shiftKey || e.ctrlKey || e.metaKey || editor.multiSelect;
       if (additive) {
         const next = new Set(editor.selection);
         next.has(id) ? next.delete(id) : next.add(id);
@@ -376,6 +391,7 @@
         }
         drag = {
           mode: 'move',
+          touch: isTouch,
           origin: world,
           start: sel.map((p) => ({ p, x: p.x, y: p.y })),
           movingPts: thin(movingPts),
@@ -384,11 +400,45 @@
           changed: false,
         };
       }
+    } else if (isTouch) {
+      // One finger on empty space pans; a tap without moving clears the selection.
+      drag = { mode: 'pan', sx: e.clientX, sy: e.clientY, vx: editor.view.x, vy: editor.view.y, tap: true };
     } else {
-      drag = { mode: 'marquee', origin: world, base: e.shiftKey ? new Set(editor.selection) : new Set() };
-      if (!e.shiftKey) clearSelection();
+      const keep = e.shiftKey || editor.multiSelect;
+      drag = { mode: 'marquee', origin: world, base: keep ? new Set(editor.selection) : new Set() };
+      if (!keep) clearSelection();
     }
     if (drag) svg.setPointerCapture(e.pointerId);
+  }
+
+  // Put pieces back where they were if a gesture is interrupted (e.g. by a second finger).
+  function cancelDrag() {
+    if (!drag) return;
+    if (drag.start && drag.changed) {
+      for (const s of drag.start) {
+        s.p.x = s.x;
+        s.p.y = s.y;
+        if (s.rotation != null) s.p.rotation = s.rotation;
+      }
+      updatePieceTransforms(drag.start.map((s) => s.p));
+    }
+    if (drag.mode === 'marquee') editor.selection = drag.base;
+    drag = null;
+    renderOverlay();
+  }
+
+  function pinchState() {
+    const [a, b] = [...touches.values()];
+    return { mid: [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2], dist: Math.max(1, Math.hypot(a[0] - b[0], a[1] - b[1])) };
+  }
+
+  function startPinch() {
+    const p = pinchState();
+    const r = stage.getBoundingClientRect();
+    const v = editor.view;
+    // World point under the fingers' midpoint stays under it while zooming.
+    const anchor = [v.x + (p.mid[0] - r.left) / v.scale, v.y + (p.mid[1] - r.top) / v.scale];
+    drag = { mode: 'pinch', dist: p.dist, scale: v.scale, anchor };
   }
 
   // Curved shapes have many vertices; cap the number used for snapping.
@@ -399,16 +449,25 @@
   }
 
   function onPointerMove(e) {
+    if (touches.has(e.pointerId)) touches.set(e.pointerId, [e.clientX, e.clientY]);
     if (!drag) return;
     const world = clientToWorld(e);
-    if (drag.mode === 'pan') {
+    if (drag.mode === 'pinch') {
+      if (touches.size < 2) return;
+      const p = pinchState();
+      const r = stage.getBoundingClientRect();
+      const scale = Math.min(400, Math.max(1, (drag.scale * p.dist) / drag.dist));
+      editor.view = { scale, x: drag.anchor[0] - (p.mid[0] - r.left) / scale, y: drag.anchor[1] - (p.mid[1] - r.top) / scale };
+      updateViewBox();
+    } else if (drag.mode === 'pan') {
+      if (drag.tap && Math.hypot(e.clientX - drag.sx, e.clientY - drag.sy) > 6) drag.tap = false;
       editor.view.x = drag.vx - (e.clientX - drag.sx) / editor.view.scale;
       editor.view.y = drag.vy - (e.clientY - drag.sy) / editor.view.scale;
       updateViewBox();
     } else if (drag.mode === 'move') {
       let dx = world[0] - drag.origin[0];
       let dy = world[1] - drag.origin[1];
-      if (!drag.changed && Math.hypot(dx, dy) * editor.view.scale < 3) return;
+      if (!drag.changed && Math.hypot(dx, dy) * editor.view.scale < (drag.touch ? 6 : 3)) return;
       drag.changed = true;
       const snapped = e.altKey ? { dx, dy } : snapDelta(dx, dy, drag);
       for (const s of drag.start) {
@@ -442,9 +501,16 @@
     }
   }
 
-  function onPointerUp() {
+  function onPointerUp(e) {
+    touches.delete(e.pointerId);
     if (!drag) return;
     const d = drag;
+    if (d.mode === 'pinch') {
+      // Lifting one finger of a pinch: carry on panning with the other.
+      const rest = [...touches.values()][0];
+      drag = rest ? { mode: 'pan', sx: rest[0], sy: rest[1], vx: editor.view.x, vy: editor.view.y } : null;
+      return;
+    }
     drag = null;
     stage.classList.remove('panning');
     if ((d.mode === 'move' || d.mode === 'rotate') && d.changed) {
@@ -456,13 +522,15 @@
       Q.store.emit('selection');
     } else if (d.mode === 'marquee') {
       setSelection(editor.selection);
+    } else if (d.mode === 'pan' && d.tap && !editor.multiSelect) {
+      clearSelection();
     }
     renderOverlay();
   }
 
   function snapDelta(dx, dy, d) {
     const q = S().quilt;
-    const thr = 10 / editor.view.scale;
+    const thr = (d.touch ? 18 : 10) / editor.view.scale;
     let best = null;
     if (q.snapPieces && d.staticPts.length) {
       let bestD = thr * thr;

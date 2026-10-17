@@ -50,6 +50,7 @@
     document.body.append(tip);
     let timer;
     document.addEventListener('pointerover', (e) => {
+      if (e.pointerType !== 'mouse') return; // no hover tooltips for touch
       const t = e.target.closest('[data-tip]');
       clearTimeout(timer);
       if (!t) return tip.classList.remove('show');
@@ -486,9 +487,69 @@
   }
 
   // ---------------------------------------------------------------- side tabs
-  function setSideTab(name) {
+  function setSideTab(name, fromSheet) {
     for (const b of $$('[data-side-tab]')) b.classList.toggle('active', b.dataset.sideTab === name);
     for (const p of $$('[data-side-pane]')) p.hidden = p.dataset.sidePane !== name;
+    if (!fromSheet && narrow.matches && document.body.dataset.sheet !== name) openSheet(name);
+  }
+
+  // ---------------------------------------------------------------- phone layout
+  // On narrow screens the side panels become bottom sheets opened from a tab bar.
+  const narrow = matchMedia('(max-width: 760px)');
+
+  function openSheet(name) {
+    const current = document.body.dataset.sheet || '';
+    if (name === current) name = '';
+    document.body.dataset.sheet = name;
+    if (name === 'shapes' || name === 'fabrics') setSideTab(name, true);
+    for (const b of $$('.mobile-nav [data-sheet]')) b.classList.toggle('active', b.dataset.sheet === name);
+    updateSelBar();
+  }
+
+  function updateSelBar() {
+    const has = editor.selection.size > 0;
+    $('#sel-bar').hidden = !has || !!document.body.dataset.sheet;
+    $('[data-sel=multi]').classList.toggle('on', editor.multiSelect);
+    $('#nav-inspector-label').textContent = has ? 'Piece' : 'Quilt';
+  }
+
+  function initMobile() {
+    for (const b of $$('.mobile-nav [data-sheet]')) b.addEventListener('click', () => openSheet(b.dataset.sheet));
+    const actions = {
+      'rot-ccw': () => editor.rotateSelected(-90),
+      'rot-cw': () => editor.rotateSelected(90),
+      'flip-h': () => editor.flipSelected('h'),
+      'flip-v': () => editor.flipSelected('v'),
+      dup: () => editor.duplicateSelected(),
+      del: () => editor.deleteSelected(),
+      multi: () => {
+        editor.multiSelect = !editor.multiSelect;
+        toast(editor.multiSelect ? 'Tap pieces to add or remove them from the selection' : 'Selecting one piece at a time');
+        updateSelBar();
+      },
+      more: () => openSheet('inspector'),
+    };
+    for (const b of $$('[data-sel]')) b.addEventListener('click', () => actions[b.dataset.sel]());
+
+    // Overflow menu (narrow screens)
+    const menu = $('#more-menu');
+    $('#btn-more').addEventListener('click', (e) => {
+      e.stopPropagation();
+      menu.hidden = !menu.hidden;
+    });
+    for (const b of $$('[data-proxy]', menu)) {
+      b.addEventListener('click', () => {
+        menu.hidden = true;
+        $('#' + b.dataset.proxy).click();
+      });
+    }
+    document.addEventListener('pointerdown', (e) => {
+      if (!menu.hidden && !e.target.closest('#more-menu, #btn-more')) menu.hidden = true;
+    });
+    narrow.addEventListener('change', () => {
+      if (!narrow.matches) openSheet('');
+      editor.fit();
+    });
   }
 
   // ---------------------------------------------------------------- export dialog
@@ -685,6 +746,7 @@
     $('#btn-undo').disabled = !store.canUndo();
     $('#btn-redo').disabled = !store.canRedo();
     $('#empty-hint').classList.toggle('hidden', S().pieces.length > 0);
+    updateSelBar();
   }
 
   async function boot() {
@@ -696,6 +758,7 @@
     initExport();
     initToolbar();
     initKeyboard();
+    initMobile();
     store.subscribe(refresh);
     $('#inspector').addEventListener('focusout', () => setTimeout(() => inspectorStale && renderInspector()));
     await store.load();
