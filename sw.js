@@ -1,6 +1,6 @@
 /* Offline support: always try the network first so updates show up straight away, and fall back
  * to the last cached copy when there's no connection. */
-const CACHE = 'quilt-planner-v1';
+const CACHE = 'quilt-planner-dev'; // the deploy workflow stamps the release here
 const CORE = [
   './',
   'index.html',
@@ -37,7 +37,9 @@ self.addEventListener('fetch', (e) => {
   const req = e.request;
   if (req.method !== 'GET' || new URL(req.url).origin !== location.origin) return;
   e.respondWith(
-    fetch(req)
+    // 'no-cache' revalidates with the server rather than trusting the browser's HTTP cache,
+    // which GitHub Pages lets keep files for 10 minutes.
+    fetch(req, { cache: 'no-cache' })
       .then((res) => {
         if (res.ok) {
           const copy = res.clone();
