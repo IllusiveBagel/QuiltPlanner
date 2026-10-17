@@ -19,6 +19,11 @@ No build step, no server, no dependencies — just open `index.html` in a modern
 - **Fabrics** – upload photos of your fabric (or add solid colours). Set how many inches of
   fabric the photo shows so prints appear at true scale, then fine-tune scale, angle and
   position per piece for fussy cutting.
+- **Import pattern** – turn a picture of a grid-based quilt pattern (diagram, screenshot or flat
+  photo) into pieces. The grid is detected automatically and can be adjusted. Each square becomes
+  plain squares, half-square or quarter-square triangles, halves or four-patches, and the colours
+  become solid fabrics. To swap one for your own fabric, use *Select every piece in this fabric*
+  in the inspector, then click your fabric.
 - **Export** – PNG, JPEG or a one-page PDF (Letter, Legal, Tabloid, A4, A3), plus direct printing.
 - **Saving** – work is autosaved in the browser (IndexedDB). Use *Save* to download a
   `.quilt` file you can open again later or on another computer.
@@ -34,6 +39,7 @@ js/store.js       State, undo/redo, autosave, project files
 js/editor.js      Quilt canvas: rendering, selection, drag/snap/rotate, zoom/pan
 js/builder.js     New/edit shape dialog (basic shapes + point-to-point drawing)
 js/export.js      Canvas renderer, PNG/JPEG/PDF export, printing
+js/pattern-import.js  Import a quilt pattern image: grid detection, shape & colour analysis
 js/app.js         UI wiring: libraries, inspector, toolbar, keyboard shortcuts
 ```
 

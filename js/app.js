@@ -381,6 +381,7 @@
     if (fabric) {
       fabricBlock = `<div class="current-fabric"><i class="swatch" style="${swatchStyle(fabric)}"></i>
         <div><strong>${esc(fabric.name)}</strong><span>${fabric.kind === 'color' ? fabric.color : 'Print'}</span></div>
+        <button class="icon-btn xs" id="s-same-fabric" data-tip="Select every piece in this fabric">${icon('select')}</button>
         <button class="icon-btn xs" id="s-clear-fabric" data-tip="Remove fabric">${icon('x')}</button></div>`;
       if (fabric.kind === 'image') {
         fabricBlock += `
@@ -457,6 +458,12 @@
     on('s-back', 'click', () => editor.reorder('back'));
     on('s-pick-fabric', 'click', () => setSideTab('fabrics'));
     on('s-clear-fabric', 'click', () => editor.applyFabric(null));
+    on('s-same-fabric', 'click', () => {
+      const id = sel[0].fabricId;
+      editor.setSelection(S().pieces.filter((p) => p.fabricId === id).map((p) => p.id));
+      setSideTab('fabrics');
+      toast('Now click a fabric to swap it in everywhere');
+    });
     on('s-reset-fill', 'click', () => editor.setFill({ zoom: 1, rotation: 0, offsetX: 0, offsetY: 0 }));
 
     // Sliders preview live and commit (one undo step) on release.
@@ -684,6 +691,7 @@
     initTooltips();
     editor.init($('#stage'));
     Q.builder.init();
+    Q.patternImport.init();
     initFabricDialog();
     initExport();
     initToolbar();

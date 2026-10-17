@@ -376,3 +376,39 @@ kbd {
   #print-area img { max-width: 100%; max-height: 92vh; object-fit: contain; }
 }
 #help-dialog { width: min(580px, calc(100vw - 32px)); }
+
+/* ---------------------------------------------------------------- pattern import */
+.modal-xl { width: min(1180px, calc(100vw - 32px)); height: min(720px, calc(100vh - 32px)); }
+.import-body { display: grid; grid-template-columns: 1fr 290px; gap: 20px; }
+.import-main { min-width: 0; min-height: 0; display: flex; }
+.import-drop {
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+  border: 2px dashed var(--line-strong); border-radius: 14px; padding: 32px; text-align: center; background: var(--panel-2);
+}
+.import-drop > svg { width: 40px; height: 40px; fill: none; stroke: var(--accent); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.import-drop strong { font-size: 16px; }
+.import-drop > span { color: var(--muted); }
+.import-drop .hint { max-width: 440px; margin-top: 8px; }
+.import-drop.drop-target { border-color: var(--accent); background: var(--accent-soft); }
+.import-work { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; min-height: 0; }
+.import-work figure { margin: 0; display: flex; flex-direction: column; gap: 8px; min-height: 0; min-width: 0; }
+.import-work figcaption { font-size: 12.5px; color: var(--muted); font-weight: 500; }
+.import-canvas { flex: 1; min-height: 0; background: var(--panel-2); border: 1px solid var(--line); border-radius: 12px; padding: 10px; display: flex; }
+.import-canvas svg { width: 100%; height: 100%; touch-action: none; }
+.import-dim { fill: rgba(31, 28, 25, .45); pointer-events: none; }
+.import-grid { stroke: #fff; stroke-width: 1; fill: none; opacity: .9; pointer-events: none; mix-blend-mode: difference; }
+.import-frame { fill: transparent; stroke: var(--select); stroke-width: 2; cursor: move; }
+.import-handle { fill: #fff; stroke: var(--select); cursor: nwse-resize; }
+.import-handle[data-h=tr], .import-handle[data-h=bl] { cursor: nesw-resize; }
+#import-preview path { stroke: rgba(31, 28, 25, .35); stroke-width: .012; stroke-linejoin: round; }
+.import-palette { display: flex; flex-wrap: wrap; gap: 5px; min-height: 20px; }
+.import-palette i { width: 20px; height: 20px; border-radius: 5px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.12); }
+.import-controls { display: flex; flex-direction: column; gap: 16px; overflow-y: auto; padding-right: 2px; }
+.import-controls section { display: flex; flex-direction: column; gap: 8px; }
+.import-controls h4 { margin: 0; font-size: 11.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--faint); font-weight: 600; }
+.import-controls .check input[type=radio] { accent-color: var(--accent); width: 16px; height: 16px; margin: 0; }
+@media (max-width: 900px) {
+  .import-body { grid-template-columns: 1fr; }
+  .import-work { grid-template-columns: 1fr; }
+  .import-canvas { min-height: 220px; }
+}

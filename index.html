@@ -41,6 +41,7 @@
       <symbol id="i-fabric" viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M4 9.3h16M4 14.6h16M9.3 4v16M14.6 4v16" stroke-opacity=".45"/></symbol>
       <symbol id="i-palette" viewBox="0 0 24 24"><circle cx="13.5" cy="6.5" r="1.3"/><circle cx="17.5" cy="10.5" r="1.3"/><circle cx="8.5" cy="7.5" r="1.3"/><circle cx="6.5" cy="12.5" r="1.3"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.93 0 1.65-.75 1.65-1.69 0-.44-.18-.84-.44-1.13-.29-.29-.44-.65-.44-1.13a1.64 1.64 0 0 1 1.67-1.67h2c3.05 0 5.56-2.5 5.56-5.55C21.97 6.01 17.46 2 12 2z"/></symbol>
       <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/></symbol>
+      <symbol id="i-select" viewBox="0 0 24 24"><path d="M5 3a2 2 0 0 0-2 2M19 3a2 2 0 0 1 2 2M21 19a2 2 0 0 1-2 2M5 21a2 2 0 0 1-2-2M9 3h1M9 21h1M14 3h1M14 21h1M3 9v1M21 9v1M3 14v1M21 14v1"/><path d="m9 12 2 2 4-4"/></symbol>
       <symbol id="i-eraser" viewBox="0 0 24 24"><path d="m7 21-4.3-4.3a1 1 0 0 1 0-1.4l10-10a1 1 0 0 1 1.4 0l5.6 5.6a1 1 0 0 1 0 1.4L11 21z"/><path d="M22 21H7M5 11l9 9"/></symbol>
     </defs>
   </svg>
@@ -62,6 +63,7 @@
       <button class="icon-btn" id="btn-save" data-tip="Save quilt file"><svg><use href="#i-save"/></svg></button>
       <span class="divider"></span>
       <button class="icon-btn" id="btn-help" data-tip="Keyboard shortcuts"><svg><use href="#i-help"/></svg></button>
+      <button class="btn" id="btn-import" data-tip="Turn a picture of a quilt pattern into pieces"><svg><use href="#i-image"/></svg>Import pattern</button>
       <button class="btn" id="btn-print"><svg><use href="#i-print"/></svg>Print</button>
       <button class="btn primary" id="btn-export"><svg><use href="#i-download"/></svg>Export</button>
     </div>
@@ -97,7 +99,7 @@
       <div class="empty-hint" id="empty-hint">
         <svg><use href="#i-shapes"/></svg>
         <strong>Start your quilt</strong>
-        <span>Pick a shape from the library on the left</span>
+        <span>Pick a shape from the library on the left,<br>or use <b>Import pattern</b> to start from a picture</span>
       </div>
       <div class="float-bar">
         <button class="icon-btn" id="btn-zoom-out" data-tip="Zoom out (−)"><svg><use href="#i-zoom-out"/></svg></button>
@@ -165,6 +167,81 @@
       <button class="btn" id="shape-cancel">Cancel</button>
       <button class="btn primary" id="shape-save">Add to library</button>
     </footer>
+  </dialog>
+
+  <!-- Import pattern -->
+  <dialog id="import-dialog" class="modal modal-xl">
+    <header class="modal-head">
+      <h2>Import a pattern</h2>
+      <button class="icon-btn" data-close aria-label="Close"><svg><use href="#i-x"/></svg></button>
+    </header>
+    <div class="modal-body import-body">
+      <div class="import-main">
+        <div class="import-drop" id="import-drop">
+          <svg><use href="#i-image"/></svg>
+          <strong>Drop a picture of a quilt pattern here</strong>
+          <span>or paste one with <kbd>Ctrl</kbd>+<kbd>V</kbd></span>
+          <button class="btn primary" id="import-choose"><svg><use href="#i-upload"/></svg>Choose image</button>
+          <p class="hint">Works best with a straight-on picture of a pattern laid out on a grid — a pattern diagram, a screenshot or a flat photo. Each grid square becomes plain squares, half-square or quarter-square triangles, halves or four-patches.</p>
+        </div>
+        <div class="import-work" id="import-work" hidden>
+          <figure>
+            <figcaption>Drag the corners so the frame fits the quilt's outer edge</figcaption>
+            <div class="import-canvas"><svg id="import-svg" preserveAspectRatio="xMidYMid meet"></svg></div>
+          </figure>
+          <figure>
+            <figcaption>Result</figcaption>
+            <div class="import-canvas"><svg id="import-preview" preserveAspectRatio="xMidYMid meet"></svg></div>
+            <div class="import-palette" id="import-palette"></div>
+          </figure>
+        </div>
+      </div>
+      <div class="import-controls">
+        <section>
+          <h4>Grid</h4>
+          <div class="row gap">
+            <label class="field"><span>Columns</span><input type="number" id="import-cols" min="1" max="120" value="8"></label>
+            <label class="field"><span>Rows</span><input type="number" id="import-rows" min="1" max="120" value="8"></label>
+          </div>
+          <button class="btn sm block" id="import-auto"><svg><use href="#i-grid"/></svg>Detect grid again</button>
+        </section>
+        <section>
+          <label class="field"><span>Finished size of each grid square</span>
+            <div class="input-unit"><input type="number" id="import-cell" min="0.25" step="0.25" value="3"><em>in</em></div>
+          </label>
+        </section>
+        <section>
+          <label class="field"><span>Colours</span>
+            <select id="import-colours">
+              <option value="0">Automatic</option>
+              <option value="2">2</option><option value="3">3</option><option value="4">4</option>
+              <option value="5">5</option><option value="6">6</option><option value="7">7</option>
+              <option value="8">8</option><option value="10">10</option><option value="12">12</option>
+              <option value="16">16</option>
+            </select>
+          </label>
+          <label class="slider"><span>Detail</span><output>Simpler ↔ More pieces</output><input type="range" id="import-detail" min="0" max="100" value="50"></label>
+        </section>
+        <section>
+          <h4>Shapes to look for</h4>
+          <label class="check"><input type="checkbox" id="import-tri" checked> Triangles (half- &amp; quarter-square)</label>
+          <label class="check"><input type="checkbox" id="import-split" checked> Halves &amp; four-patches</label>
+        </section>
+        <section>
+          <h4>Place</h4>
+          <label class="check"><input type="radio" name="import-mode" value="replace" checked> Replace the current quilt</label>
+          <label class="check"><input type="radio" name="import-mode" value="add"> Add to the current quilt</label>
+        </section>
+        <p class="hint" id="import-summary"></p>
+      </div>
+    </div>
+    <footer class="modal-foot">
+      <button class="btn" id="import-change" hidden><svg><use href="#i-image"/></svg>Choose another image</button>
+      <span class="spacer"></span>
+      <button class="btn" data-close>Cancel</button>
+      <button class="btn primary" id="import-go" disabled>Import</button>
+    </footer>
+    <input type="file" id="import-input" accept="image/*" hidden>
   </dialog>
 
   <!-- Export -->
@@ -265,6 +342,7 @@
   <script src="js/editor.js"></script>
   <script src="js/builder.js"></script>
   <script src="js/export.js"></script>
+  <script src="js/pattern-import.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>
